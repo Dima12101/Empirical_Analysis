@@ -10,6 +10,22 @@ def print_result(start, distance, n):
         else:
             print(f"{start} > {i} = маршрут недоступен")
 
+def generate_graph(count_V, count_E):
+    graph = list([0] * count_V for i in range(0, count_V))
+    temp_count_E = 0
+    for i in range(0, count_V):
+        if temp_count_E != count_E:
+            for j in range(0, count_V):
+                if temp_count_E != count_E:
+                    is_exist_E = random.randint(False, True)
+                    graph[i][j] = random.randint(1, 100) * is_exist_E
+                    temp_count_E += is_exist_E
+                else:
+                    break
+        else:
+            break
+    return graph
+
 
 def Dijkstra(Graph, n, start):
     # Базовая операция: сравнение
@@ -45,18 +61,21 @@ def Dijkstra(Graph, n, start):
 
 
 def main():
-    n = 6
-    start = 0
-    Graph = [
-		[0, 1, 4, 0, 2, 0],
-		[0, 0, 0, 9, 0, 0],
-		[4, 0, 0, 7, 0, 0],
-		[0, 9, 7, 0, 0, 2],
-		[0, 0, 0, 0, 0, 8],
-		[0, 0, 0, 0, 0, 0]
-    ]
-    distance = Dijkstra(Graph=Graph, n=n, start=start)
-    print_result(start=start, distance=distance, n=n)
+    Graph = generate_graph(10, 30)
+    for row in Graph:
+        print(row)
+    # n = 6
+    # start = 0
+    # Graph = [
+	# 	[0, 1, 4, 0, 2, 0],
+	# 	[0, 0, 0, 9, 0, 0],
+	# 	[4, 0, 0, 7, 0, 0],
+	# 	[0, 9, 7, 0, 0, 2],
+	# 	[0, 0, 0, 0, 0, 8],
+	# 	[0, 0, 0, 0, 0, 0]
+    # ]
+    # distance = Dijkstra(Graph=Graph, n=n, start=start)
+    # print_result(start=start, distance=distance, n=n)
 
 if __name__ == "__main__":
     main()
