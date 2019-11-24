@@ -1,6 +1,8 @@
 import sys
 import random
 
+MAX_DISTANCE = sys.maxsize
+
 
 def print_result(start, distance, n):
     print("Стоимость пути из начальной вершины до остальных:")
@@ -32,50 +34,50 @@ def Dijkstra(Graph, n, start):
 
     # Инициализация алгоритма
     visited = [False] * n
-    distance = [sys.maxsize] * n
+    distance = [MAX_DISTANCE] * n
     distance[start] = 0
 
-    # Алгоритм (максимальное число итерация = n-1)
-    for iter in range(0, n - 1):
-        # Поиск не посещённой вершины с минимальной меткой (за 2n)
-        min, index = sys.maxsize, None
+    min_distance = 0
+    index_node = start
+
+    # Алгоритм (максимальное число итерация = n - 1; на каждой ит. +1 от условия while; и +1 для выхода)
+    while min_distance < MAX_DISTANCE:
+        visited[index_node] = True
+        # Обновление меток соседних вершин (за 3n)
         for i in range(0, n):
-            if not visited[i] and distance[i] < min:
-                min, index = distance[i], i
-        visited[index] = True
-        # +1
-        if distance[index] != sys.maxsize:
-            # за (2 + 1)n в худшем случае
-            for i in range(0, n):
-                if not visited[i] and Graph[index][i]:
-                    new_distance = distance[index] + Graph[index][i]
-                    if new_distance < distance[i]:
-                        distance[i] = new_distance
-        else:
-            break
+            new_distance = distance[index_node] + Graph[index_node][i]
+            if not visited[i] and Graph[index_node][i] and new_distance < distance[i]:
+                distance[i] = new_distance
+            
+        # Поиск не посещённой вершины с минимальной меткой (за 2n)
+        min_distance = MAX_DISTANCE
+        for i in range(0, n):
+            if not visited[i] and distance[i] < min_distance:
+                min_distance, index_node = distance[i], i
+
     """Тогда
-    В лучшем случае (полностью не связный граф): 2n                         <-- линейный класс
-    В худшем случае (полный граф): (n - 1)(2n + 3n + 1) = (n - 1)(5n + 1)   <-- квадратичный класс
+    В лучшем случае (граф не связанный со стартовой вершиной): (3n + 2n + 1) * 1 + 1 = 5n + 2 = O(n)    <-- линейный класс
+    В худшем случае (полный граф): (3n + 2n + 1) * (n - 1) + 1 = 5n^2 - 4n = O(n^2)                     <-- квадратичный класс
     """
     return distance
 
 
 def main():
-    Graph = generate_graph(10, 30)
-    for row in Graph:
-        print(row)
-    # n = 6
-    # start = 0
-    # Graph = [
-	# 	[0, 1, 4, 0, 2, 0],
-	# 	[0, 0, 0, 9, 0, 0],
-	# 	[4, 0, 0, 7, 0, 0],
-	# 	[0, 9, 7, 0, 0, 2],
-	# 	[0, 0, 0, 0, 0, 8],
-	# 	[0, 0, 0, 0, 0, 0]
-    # ]
-    # distance = Dijkstra(Graph=Graph, n=n, start=start)
-    # print_result(start=start, distance=distance, n=n)
+    # Graph = generate_graph(10, 30)
+    # for row in Graph:
+    #     print(row)
+    n = 6
+    start = 0
+    Graph = [
+		[0, 1, 4, 0, 2, 0],
+		[0, 0, 0, 9, 0, 0],
+		[4, 0, 0, 7, 0, 0],
+		[0, 9, 7, 0, 0, 2],
+		[0, 0, 0, 0, 0, 8],
+		[0, 0, 0, 0, 0, 0]
+    ]
+    distance = Dijkstra(Graph=Graph, n=n, start=start)
+    print_result(start=start, distance=distance, n=n)
 
 if __name__ == "__main__":
     main()
