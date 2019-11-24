@@ -1,44 +1,57 @@
 import sys
 import random
 
-MAX_DISTANCE = sys.maxsize
 
+RANGE_VALUES = (1, 10)
 
-def print_result(start, distance, n):
+def _generate_graph(count_V, count_E):
+    # Генерация не связанного графа
+    graph = list([0] * count_V for i in range(0, count_V))
+    # Добавление рёбер
+    temp_count_E = 0
+    while temp_count_E < count_E:
+        # Случайным образом выбираем пару вершин
+        begin_node = random.randint(0, count_V- 1)
+        end_node = random.randint(0, count_V - 1)
+        if graph[begin_node][end_node] == 0:
+            # Случайным образом выясняем, есть ли между ними ребро
+            is_exist_E = random.randint(False, True)
+            if is_exist_E:
+                # Создаём ребро
+                graph[begin_node][end_node] = random.randint(*RANGE_VALUES)
+                temp_count_E += 1
+    return graph
+
+def generate_data(n):
+    # Случайным образом выбираем кол-во рёбер
+    count_E = random.randint(0, n * (n + 1) / 2)
+    # Случайным образом генерируем граф
+    Graph = _generate_graph(count_V=n, count_E=count_E)
+    # Случайным образом выбираем стартовую вершину
+    start_node = random.randint(0, n - 1)
+
+    return Graph, start_node
+
+def print_result(start_node, distance, n):
     print("Стоимость пути из начальной вершины до остальных:")
     for i in range(0, n):
         if distance[i] != sys.maxsize:
-            print(f"{start} > {i} = {distance[i]}")
+            print(f"{start_node} > {i} = {distance[i]}")
         else:
-            print(f"{start} > {i} = маршрут недоступен")
+            print(f"{start_node} > {i} = маршрут недоступен")
 
-def generate_graph(count_V, count_E):
-    graph = list([0] * count_V for i in range(0, count_V))
-    temp_count_E = 0
-    for i in range(0, count_V):
-        if temp_count_E != count_E:
-            for j in range(0, count_V):
-                if temp_count_E != count_E:
-                    is_exist_E = random.randint(False, True)
-                    graph[i][j] = random.randint(1, 100) * is_exist_E
-                    temp_count_E += is_exist_E
-                else:
-                    break
-        else:
-            break
-    return graph
+MAX_DISTANCE = sys.maxsize
 
-
-def Dijkstra(Graph, n, start):
+def Dijkstra(Graph, n, start_node):
     # Базовая операция: сравнение
 
     # Инициализация алгоритма
     visited = [False] * n
     distance = [MAX_DISTANCE] * n
-    distance[start] = 0
+    distance[start_node] = 0
 
     min_distance = 0
-    index_node = start
+    index_node = start_node
 
     # Алгоритм (максимальное число итерация = n - 1; на каждой ит. +1 от условия while; и +1 для выхода)
     while min_distance < MAX_DISTANCE:
@@ -63,21 +76,22 @@ def Dijkstra(Graph, n, start):
 
 
 def main():
-    # Graph = generate_graph(10, 30)
-    # for row in Graph:
-    #     print(row)
-    n = 6
-    start = 0
-    Graph = [
-		[0, 1, 4, 0, 2, 0],
-		[0, 0, 0, 9, 0, 0],
-		[4, 0, 0, 7, 0, 0],
-		[0, 9, 7, 0, 0, 2],
-		[0, 0, 0, 0, 0, 8],
-		[0, 0, 0, 0, 0, 0]
-    ]
-    distance = Dijkstra(Graph=Graph, n=n, start=start)
-    print_result(start=start, distance=distance, n=n)
+    n = 10
+    Graph, start_node = generate_data(n)
+    for row in Graph:
+        print(row)
+    # n = 6
+    # start = 0
+    # Graph = [
+	# 	[0, 1, 4, 0, 2, 0],
+	# 	[0, 0, 0, 9, 0, 0],
+	# 	[4, 0, 0, 7, 0, 0],
+	# 	[0, 9, 7, 0, 0, 2],
+	# 	[0, 0, 0, 0, 0, 8],
+	# 	[0, 0, 0, 0, 0, 0]
+    # ]
+    distance = Dijkstra(Graph=Graph, n=n, start_node=start_node)
+    print_result(start_node=start_node, distance=distance, n=n)
 
 if __name__ == "__main__":
     main()
