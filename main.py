@@ -38,7 +38,7 @@ class Algorithm_Dijkstra:
 
         return Graph, start_node
 
-    def algorithm_operations(self, Graph, start_node):
+    def algorithm(self, Graph, start_node):
         # Базовая операция: сравнение
 
         counter = 0
@@ -52,57 +52,25 @@ class Algorithm_Dijkstra:
         min_distance = 0
         index_node = start_node
 
-        # Алгоритм (максимальное число итерация = n - 1; на каждой ит. +1 от условия while; и +1 для выхода)
+        # Алгоритм
         while min_distance < self.MAX_DISTANCE:
             counter += 1  # <-- счётчик
             visited[index_node] = True
-            # Обновление меток соседних вершин (за 3n)
+            # Обновление меток соседних вершин
             for i in range(0, n):
                 new_distance = distance[index_node] + Graph[index_node][i]
                 counter += 3    # <-- счётчик
                 if not visited[i] and Graph[index_node][i] and new_distance < distance[i]:
                     distance[i] = new_distance
                 
-            # Поиск не посещённой вершины с минимальной меткой (за 2n)
+            # Поиск не посещённой вершины с минимальной меткой
             min_distance = self.MAX_DISTANCE
             for i in range(0, n):
                 counter += 2  # <-- счётчик
                 if not visited[i] and distance[i] < min_distance:
                     min_distance, index_node = distance[i], i
         counter += 1  # <-- счётчик
-
-        """Сложность
-        В лучшем случае (граф не связанный со стартовой вершиной): (3n + 2n + 1) * 1 + 1 = 5n + 2 = Омега(n) <-- линейный класс
-        В худшем случае (полный граф): (3n + 2n + 1) * (n - 1) + 1 = 5n^2 - 4n = O(n^2)                      <-- квадратичный класс
-        """
         return distance, counter
-
-    def algorithm_time(self, Graph, start_node):
-        # Инициализация алгоритма
-        n = len(Graph)
-
-        visited = [False] * n
-        distance = [self.MAX_DISTANCE] * n
-        distance[start_node] = 0
-
-        min_distance = 0
-        index_node = start_node
-
-        # Алгоритм
-        time_start = time.time()
-        while min_distance < self.MAX_DISTANCE:
-            visited[index_node] = True
-            for i in range(0, n):
-                new_distance = distance[index_node] + Graph[index_node][i]
-                if not visited[i] and Graph[index_node][i] and new_distance < distance[i]:
-                    distance[i] = new_distance
-            min_distance = self.MAX_DISTANCE
-            for i in range(0, n):
-                if not visited[i] and distance[i] < min_distance:
-                    min_distance, index_node = distance[i], i
-        time_end = time.time()
-
-        return distance, time_end - time_start
 
 
 def print_result(distance, start_node):
@@ -116,58 +84,66 @@ def print_result(distance, start_node):
 
 RANGE_n = (10, 100)
 
-def _show_empirical_f(empirical_f, C, name_file='empirical_analysis', title=''):
+
+def _show_empirical_f(empirical_f, C1, C2):
     # Show Omega(n), O(n^2), empirical_f
     x = np.arange(*RANGE_n)
-    upperAsymptotic = C * x ** 2
+    lowerAsymptotic = C1 * x ** 2
+    upperAsymptotic = C2 * x ** 2
     fig, ax = plt.subplots()
+    ax.plot(x, upperAsymptotic, color="green", linestyle='--', label="$C_2n^2$")
     ax.scatter(x, empirical_f, marker='o', s=10, c="red", edgecolor='b', label="$f(n)$")
-    ax.plot(x, upperAsymptotic, color="green", linestyle='--', label="$Cn^2$")
-    ax.set_title(title)
+    ax.plot(x, lowerAsymptotic, color="orange", linestyle='--', label="$C_1n^2$")
+    ax.set_title('Эмпирический анализ')
     ax.set_xlabel("n")
     ax.set_ylabel("Трудоёмкость")
+    ax.minorticks_on()
+    ax.grid(which='major',
+            color='k',
+            linestyle=':')
+    ax.grid(which='minor',
+            color='k',
+            linestyle=':')
     ax.legend()
 
     plt.show()
-    fig.savefig(f'{name_file}.png')
+    fig.savefig(f'empirical_analysis-test'
+                f'png')
 
 
-def empirical_analysis(type_complexity='operations'):
+def empirical_analysis():
     Dijkstra = Algorithm_Dijkstra()
     range_n = RANGE_n
     m = 10
 
     # get empirical f
-    empirical_f = [None] * (range_n[1] - range_n[0])
-    if type_complexity == 'operations':
-        for i, n in enumerate(range(*range_n)):
-            f_on_n = [None] * m
-            for j in range(m):
-                Graph, start_node = Dijkstra.generate_data(n)
-                _, f_on_n[j] = Dijkstra.algorithm_operations(Graph, start_node)
-            empirical_f[i] = sum(f_on_n) / m
-    elif type_complexity == 'time':
-        for i, n in enumerate(range(*range_n)):
-            f_on_n = [None] * m
-            for j in range(m):
-                Graph, start_node = Dijkstra.generate_data(n)
-                _, f_on_n[j] = Dijkstra.algorithm_time(Graph, start_node)
-            empirical_f[i] = sum(f_on_n) / m
+    f = [None] * (range_n[1] - range_n[0])
+    for i, n in enumerate(range(*range_n)):
+        f_on_n = [None] * m
+        for j in range(m):
+            Graph, start_node = Dijkstra.generate_data(n)
+            _, f_on_n[j] = Dijkstra.algorithm(Graph, start_node)
+        f[i] = sum(f_on_n) / m
 
-    # Search constant C
-    x = np.arange(*RANGE_n)
-    ratio = np.array(empirical_f) / (x ** 2)
-    C = ratio.mean()
-
-    print(C)
-    _show_empirical_f(empirical_f, C,
-                      name_file=f'empirical_analysis_{type_complexity}',
-                      title=f'The empirical analysis (by {type_complexity})')
+    # Search constants: C1 and C2
+    n = np.arange(*range_n)
+    f = np.array(f)
+    g = n ** 2
+    ratio = f / g
+    for i in range(len(n)):
+        C1 = min(ratio[i:])
+        C2 = max(ratio[i:])
+        if (C1 > 0 and C2 > 0) and (C1 * g[i] >= n[i] and C2 * g[i] <= n[i] ** 3):
+            print('n0:', n[i])
+            print('C1:', C1)
+            print('C2:', C2)
+            _show_empirical_f(f, C1, C2)
+            return True
+    return False
 
 
 def main():
-    #empirical_analysis(type_complexity='operations')
-    empirical_analysis(type_complexity='time')
+    empirical_analysis()
 
 
 if __name__ == "__main__":
