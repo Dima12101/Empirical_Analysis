@@ -1,8 +1,8 @@
 import sys
 import random
-import time
 import matplotlib.pyplot as plt
 import numpy as np
+
 
 
 class Algorithm_Dijkstra:
@@ -82,10 +82,10 @@ def print_result(distance, start_node):
             print(f"{start_node} > {i} = маршрут недоступен")
 
 
-RANGE_n = (10, 100)
+RANGE_n = (1, 101)
 
 
-def _show_empirical_f(empirical_f, C1, C2):
+def _show_empirical_f_with_asymptotic(empirical_f, C1, C2):
     # Show Omega(n), O(n^2), empirical_f
     x = np.arange(*RANGE_n)
     lowerAsymptotic = C1 * x ** 2
@@ -94,7 +94,6 @@ def _show_empirical_f(empirical_f, C1, C2):
     ax.plot(x, upperAsymptotic, color="green", linestyle='--', label="$C_2n^2$")
     ax.scatter(x, empirical_f, marker='o', s=10, c="red", edgecolor='b', label="$f(n)$")
     ax.plot(x, lowerAsymptotic, color="orange", linestyle='--', label="$C_1n^2$")
-    ax.set_title('Эмпирический анализ')
     ax.set_xlabel("n")
     ax.set_ylabel("Трудоёмкость")
     ax.minorticks_on()
@@ -107,14 +106,32 @@ def _show_empirical_f(empirical_f, C1, C2):
     ax.legend()
 
     plt.show()
-    fig.savefig(f'empirical_analysis-test'
-                f'png')
+    fig.savefig(f'empirical_analysis.png')
+
+
+def _show_empirical_f(empirical_f):
+    x = np.arange(*RANGE_n)
+    fig, ax = plt.subplots()
+    ax.scatter(x, empirical_f, marker='o', s=10, c="red", edgecolor='b', label="$f(n)$")
+    ax.set_xlabel("n")
+    ax.set_ylabel("Трудоёмкость")
+    ax.minorticks_on()
+    ax.grid(which='major',
+            color='k',
+            linestyle=':')
+    ax.grid(which='minor',
+            color='k',
+            linestyle=':')
+    ax.legend()
+
+    plt.show()
+    fig.savefig(f'empirical_f.png')
 
 
 def empirical_analysis():
     Dijkstra = Algorithm_Dijkstra()
     range_n = RANGE_n
-    m = 10
+    m = 100
 
     # get empirical f
     f = [None] * (range_n[1] - range_n[0])
@@ -124,6 +141,15 @@ def empirical_analysis():
             Graph, start_node = Dijkstra.generate_data(n)
             _, f_on_n[j] = Dijkstra.algorithm(Graph, start_node)
         f[i] = sum(f_on_n) / m
+    _show_empirical_f(f)
+
+    # For showing of table
+    with open('data.txt', 'w') as data:
+        for n in range(*range_n):
+            data.write(f"{n}\t")
+        data.write('\n')
+        for f_i in f:
+            data.write(f"{str(f_i).replace('.',',')}\t")
 
     # Search constants: C1 and C2
     n = np.arange(*range_n)
@@ -137,7 +163,7 @@ def empirical_analysis():
             print('n0:', n[i])
             print('C1:', C1)
             print('C2:', C2)
-            _show_empirical_f(f, C1, C2)
+            _show_empirical_f_with_asymptotic(f, C1, C2)
             return True
     return False
 
