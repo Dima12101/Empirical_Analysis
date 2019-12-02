@@ -1,8 +1,11 @@
 import sys
 import random
 import matplotlib.pyplot as plt
+from scipy import stats, special
 import numpy as np
-
+import math
+import time
+import heapq
 
 
 class Algorithm_Dijkstra:
@@ -39,38 +42,40 @@ class Algorithm_Dijkstra:
         return Graph, start_node
 
     def algorithm(self, Graph, start_node):
-        # Базовая операция: сравнение
-
         counter = 0
         # Инициализация алгоритма
         n = len(Graph)
 
-        visited = [False] * n
+        parent = [None] * n
         distance = [self.MAX_DISTANCE] * n
         distance[start_node] = 0
 
-        min_distance = 0
-        index_node = start_node
+        Q = []
+        for i in range(n):
+            heapq.heappush(Q, (distance[i], i))
 
-        # Алгоритм
-        while min_distance < self.MAX_DISTANCE:
-            counter += 1  # <-- счётчик
-            visited[index_node] = True
-            # Обновление меток соседних вершин
-            for i in range(0, n):
-                new_distance = distance[index_node] + Graph[index_node][i]
-                counter += 3    # <-- счётчик
-                if not visited[i] and Graph[index_node][i] and new_distance < distance[i]:
-                    distance[i] = new_distance
-                
-            # Поиск не посещённой вершины с минимальной меткой
-            min_distance = self.MAX_DISTANCE
-            for i in range(0, n):
-                counter += 2  # <-- счётчик
-                if not visited[i] and distance[i] < min_distance:
-                    min_distance, index_node = distance[i], i
-        counter += 1  # <-- счётчик
-        return distance, counter
+        V = set(range(n))
+        V_T = set({})
+
+        time_start = time.time()
+        while len(Q) != 0:
+            min_node = heapq.heappop(Q)[1]
+            V_T.add(min_node)
+            for node in V - V_T:
+                if Graph[min_node][node]:
+                    #counter += 1
+                    new_distance = distance[min_node] + Graph[min_node][node]
+                    if distance[node] > new_distance:
+                        #counter += 1
+                        Q.remove((distance[node], node))
+                        heapq.heappush(Q, (new_distance, node))
+
+                        distance[node] = new_distance
+                        parent[node] = min_node
+
+        time_end = time.time()
+        t = (time_end - time_start) * 1000
+        return distance, parent, t
 
 
 def print_result(distance, start_node):
@@ -82,6 +87,7 @@ def print_result(distance, start_node):
             print(f"{start_node} > {i} = маршрут недоступен")
 
 
+# Empirical analysis -----------------------------------------
 RANGE_n = (1, 101)
 
 
@@ -106,7 +112,7 @@ def _show_empirical_f_with_asymptotic(empirical_f, C1, C2):
     ax.legend()
 
     plt.show()
-    fig.savefig(f'empirical_analysis.png')
+    fig.savefig('empirical_analysis.png')
 
 
 def _show_empirical_f(empirical_f):
@@ -125,7 +131,7 @@ def _show_empirical_f(empirical_f):
     ax.legend()
 
     plt.show()
-    fig.savefig(f'empirical_f.png')
+    fig.savefig('empirical_f.png')
 
 
 def empirical_analysis():
@@ -139,7 +145,7 @@ def empirical_analysis():
         f_on_n = [None] * m
         for j in range(m):
             Graph, start_node = Dijkstra.generate_data(n)
-            _, f_on_n[j] = Dijkstra.algorithm(Graph, start_node)
+            _, _, f_on_n[j] = Dijkstra.algorithm(Graph, start_node)
         f[i] = sum(f_on_n) / m
     _show_empirical_f(f)
 
@@ -159,7 +165,7 @@ def empirical_analysis():
     for i in range(len(n)):
         C1 = min(ratio[i:])
         C2 = max(ratio[i:])
-        if (C1 > 0 and C2 > 0) and (C1 * g[i] >= n[i] and C2 * g[i] <= n[i] ** 3):
+        if C1 > 0 and C2 > 0:
             print('n0:', n[i])
             print('C1:', C1)
             print('C2:', C2)
@@ -167,9 +173,96 @@ def empirical_analysis():
             return True
     return False
 
+# -------------------------------------------------------------
+
+
+def checking_distribution():
+    Dijkstra = Algorithm_Dijkstra()
+    n = 50
+    m = 20000
+    f_n = [0] * m
+    # for i in range(m):
+    #     Graph, start_node = Dijkstra.generate_data(n)
+    #     temp_f = [0] * 100
+    #     for j in range(100):
+    #         _, _, temp_f[j] = Dijkstra.algorithm(Graph, start_node)
+    #     f_n[i] = sum(temp_f) / 100
+
+
+    #k = math.floor(1 + math.log2(m))
+    #k = math.floor(math.sqrt(m))
+    k = math.floor(math.pow(m, 1/3))
+    print(k)
+
+    # with open('hist.txt', 'w') as data:
+    #     step = (f_n_max - f_n_min) / k
+    #     l = f_n_min
+    #     while l + step <= f_n_max:
+    #         count = 0
+    #         for f in f_n:
+    #             if l <= f < l + step:
+    #                 count += 1
+    #         data.write(f"{str(count / m).replace('.', ',')}\t")
+    #         l += step
+    # with open('f-2.txt', 'w') as f_file:
+    #     for f in f_n:
+    #         f_file.write(str(f) + '\n')
+
+    with open('f-2.txt', 'r') as f_file:
+        for i, line in enumerate(f_file.readlines()):
+            f_n[i] = float(line)
+
+    f_n_mean = np.array(f_n).mean()
+    f_n_min = min(f_n)
+    f_n_max = max(f_n)
+    print(f_n_min, f_n_mean, f_n_max)
+
+    # fig, ax = plt.subplots()
+    # w, bins, _ = ax.hist(f_n, bins=k, normed=True)
+    # print(w)
+    # print(bins)
+    # plt.show()
+    # fig.savefig('hist-2.png')
+
+    t = (np.array(f_n) - f_n_min) / (f_n_max - f_n_min)
+    fig, ax = plt.subplots()
+    ax.hist(t, bins=k, normed=True)
+    plt.show()
+    fig.savefig('hist-t.png')
+
+    # t_mean = (f_n_mean - f_n_min) / (f_n_max - f_n_min)
+    # s_2 = sum(((np.array(f_n) - f_n_mean) ** 2) / ((f_n_max - f_n_min) ** 2)) / (m - 1)
+    #
+    # a = (t_mean / s_2) * (t_mean - t_mean ** 2 - s_2)
+    # b = ((1 - t_mean)/s_2) * (t_mean - t_mean ** 2 - s_2)
+
+    # fig, ax = plt.subplots()
+    # ax.hist(f_n, bins=k, normed=True)
+    #
+    # lnspc = np.linspace(f_n_min, f_n_max, m)
+    # ab, bb, cb, db = stats.beta.fit(f_n)
+    # pdf_beta = stats.beta.pdf(lnspc, ab, bb, cb, db)
+    # plt.plot(lnspc, pdf_beta, label="Beta")
+    # plt.show()
+    # fig.savefig('hist-test-1.png')
+
 
 def main():
-    empirical_analysis()
+    #empirical_analysis()
+    checking_distribution()
+
+    #print(special.gamma(0.5))
+
+    # # Checking of random function
+    # count = [0] * 100
+    # for i in range(1000000):
+    #     val = random.randint(0, 99)
+    #     count[val] += 1
+    # p_val = np.array(count) / 1000000
+    # x = np.arange(0, 100)
+    # fig, ax = plt.subplots()
+    # ax.scatter(x, p_val, marker='o', s=10, c="red", edgecolor='b')
+    # plt.show()
 
 
 if __name__ == "__main__":
