@@ -42,7 +42,6 @@ class Algorithm_Dijkstra:
         return Graph, start_node
 
     def algorithm(self, Graph, start_node):
-        counter = 0
         # Инициализация алгоритма
         n = len(Graph)
 
@@ -63,10 +62,8 @@ class Algorithm_Dijkstra:
             V_T.add(min_node)
             for node in V - V_T:
                 if Graph[min_node][node]:
-                    #counter += 1
                     new_distance = distance[min_node] + Graph[min_node][node]
                     if distance[node] > new_distance:
-                        #counter += 1
                         Q.remove((distance[node], node))
                         heapq.heappush(Q, (new_distance, node))
 
@@ -74,8 +71,9 @@ class Algorithm_Dijkstra:
                         parent[node] = min_node
 
         time_end = time.time()
-        t = (time_end - time_start) * 1000
-        return distance, parent, t
+        # В миллисекундах
+        alg_time = (time_end - time_start) * 1000
+        return distance, parent, alg_time
 
 
 def print_result(distance, start_node):
@@ -92,7 +90,6 @@ RANGE_n = (1, 101)
 
 
 def _show_empirical_f_with_asymptotic(empirical_f, C1, C2):
-    # Show Omega(n), O(n^2), empirical_f
     x = np.arange(*RANGE_n)
     lowerAsymptotic = C1 * x ** 2
     upperAsymptotic = C2 * x ** 2
@@ -139,7 +136,7 @@ def empirical_analysis():
     range_n = RANGE_n
     m = 100
 
-    # get empirical f
+    '''Getting of empirical f'''
     f = [None] * (range_n[1] - range_n[0])
     for i, n in enumerate(range(*range_n)):
         f_on_n = [None] * m
@@ -149,7 +146,7 @@ def empirical_analysis():
         f[i] = sum(f_on_n) / m
     _show_empirical_f(f)
 
-    # For showing of table
+    '''For showing of table'''
     with open('data.txt', 'w') as data:
         for n in range(*range_n):
             data.write(f"{n}\t")
@@ -157,7 +154,7 @@ def empirical_analysis():
         for f_i in f:
             data.write(f"{str(f_i).replace('.',',')}\t")
 
-    # Search constants: C1 and C2
+    '''Search constants: C1 and C2'''
     n = np.arange(*range_n)
     f = np.array(f)
     g = n ** 2
@@ -176,84 +173,92 @@ def empirical_analysis():
 # -------------------------------------------------------------
 
 
+def _beta_distribution(alpha, beta):
+    beta_coef = special.gamma(alpha + beta) / (special.gamma(alpha) * special.gamma(beta))
+    return lambda x: beta_coef * math.pow(x, alpha - 1) * math.pow(1 - x, beta - 1)
+
+
 def checking_distribution():
     Dijkstra = Algorithm_Dijkstra()
+
+    '''Parameters'''
     n = 50
     m = 20000
+    repeats = 100
+
+    '''Counting of values f for the fixed n'''
     f_n = [0] * m
     # for i in range(m):
     #     Graph, start_node = Dijkstra.generate_data(n)
-    #     temp_f = [0] * 100
-    #     for j in range(100):
-    #         _, _, temp_f[j] = Dijkstra.algorithm(Graph, start_node)
-    #     f_n[i] = sum(temp_f) / 100
+    #     f_repeats = [0] * repeats
+    #     for j in range(repeats):
+    #         _, _, f_repeats[j] = Dijkstra.algorithm(Graph, start_node)
+    #     f_n[i] = sum(f_repeats) / repeats
 
-
+    '''Number of segments'''
     #k = math.floor(1 + math.log2(m))
-    #k = math.floor(math.sqrt(m))
     k = math.floor(math.pow(m, 1/3))
-    print(k)
 
-    # with open('hist.txt', 'w') as data:
-    #     step = (f_n_max - f_n_min) / k
-    #     l = f_n_min
-    #     while l + step <= f_n_max:
-    #         count = 0
-    #         for f in f_n:
-    #             if l <= f < l + step:
-    #                 count += 1
-    #         data.write(f"{str(count / m).replace('.', ',')}\t")
-    #         l += step
-    # with open('f-2.txt', 'w') as f_file:
+    '''------Temp------'''
+    # with open('f-values.txt', 'w') as f_file:
     #     for f in f_n:
     #         f_file.write(str(f) + '\n')
-
-    with open('f-2.txt', 'r') as f_file:
+    with open('f-values.txt', 'r') as f_file:
         for i, line in enumerate(f_file.readlines()):
             f_n[i] = float(line)
+    '''---------------'''
 
-    f_n_mean = np.array(f_n).mean()
-    f_n_min = min(f_n)
-    f_n_max = max(f_n)
-    print(f_n_min, f_n_mean, f_n_max)
-
+    '''Histogram of f'''
     # fig, ax = plt.subplots()
     # w, bins, _ = ax.hist(f_n, bins=k, normed=True)
-    # print(w)
-    # print(bins)
     # plt.show()
-    # fig.savefig('hist-2.png')
+    # fig.savefig('hist-f.png')
 
+    '''Some parameters'''
+    f_n_mean = sum(f_n) / m
+    f_n_min = min(f_n)
+    f_n_max = max(f_n)
+
+    '''Normalization f --> t'''
     t = (np.array(f_n) - f_n_min) / (f_n_max - f_n_min)
-    fig, ax = plt.subplots()
-    ax.hist(t, bins=k, normed=True)
-    plt.show()
-    fig.savefig('hist-t.png')
+    '''Histogram of t'''
+    # fig, ax = plt.subplots()
+    # ax.hist(t, bins=k, normed=True)
+    # plt.show()
+    # fig.savefig('hist-t.png')
 
-    # t_mean = (f_n_mean - f_n_min) / (f_n_max - f_n_min)
-    # s_2 = sum(((np.array(f_n) - f_n_mean) ** 2) / ((f_n_max - f_n_min) ** 2)) / (m - 1)
-    #
-    # a = (t_mean / s_2) * (t_mean - t_mean ** 2 - s_2)
-    # b = ((1 - t_mean)/s_2) * (t_mean - t_mean ** 2 - s_2)
+    '''Counting of ALPHA and BETTA for beta-distribution'''
+    t_mean = (f_n_mean - f_n_min) / (f_n_max - f_n_min)
+    s_2 = sum(((np.array(f_n) - f_n_mean) ** 2) / ((f_n_max - f_n_min) ** 2)) / (m - 1)
+    a = (t_mean / s_2) * (t_mean - t_mean ** 2 - s_2)
+    b = ((1 - t_mean)/s_2) * (t_mean - t_mean ** 2 - s_2)
 
+    '''Histogram of t with beta-distribution'''
+    # lnspc = np.linspace(min(t), max(t), m)
+    # beta_dist = _beta_distribution(alpha=a, beta=b)
+    # beta_values = list(map(beta_dist, lnspc))
+    # fig, ax = plt.subplots()
+    # ax.hist(t, bins=k, normed=True)
+    # plt.plot(lnspc, beta_values)
+    # plt.show()
+    # fig.savefig('hist-t-beta.png')
+
+    '''Histogram of t with library beta-distribution'''
     # fig, ax = plt.subplots()
     # ax.hist(f_n, bins=k, normed=True)
-    #
     # lnspc = np.linspace(f_n_min, f_n_max, m)
     # ab, bb, cb, db = stats.beta.fit(f_n)
     # pdf_beta = stats.beta.pdf(lnspc, ab, bb, cb, db)
     # plt.plot(lnspc, pdf_beta, label="Beta")
     # plt.show()
-    # fig.savefig('hist-test-1.png')
+    # fig.savefig('hist-t-beta-lib.png')
 
 
 def main():
     #empirical_analysis()
     checking_distribution()
 
-    #print(special.gamma(0.5))
-
-    # # Checking of random function
+    '''Checking of random function'''
     # count = [0] * 100
     # for i in range(1000000):
     #     val = random.randint(0, 99)
