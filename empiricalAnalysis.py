@@ -68,10 +68,10 @@ def empirical_analysis():
     #     f[i] = sum(f_on_n) / m
 
     '''Up/down load data'''
-    # with open('empirical_f_data.txt', 'w') as data:
+    # with open('empiricalAnalysis_data/empirical_f_data.txt', 'w') as data:
     #     for f_i in f:
     #         data.write(f"{str(f_i)}\n")
-    with open('empirical_f_data.txt', 'r') as data:
+    with open('empiricalAnalysis_data/empirical_f_data.txt', 'r') as data:
         for i in range(len(f)):
             f[i] = float(data.readline())
 
@@ -105,5 +105,5 @@ def empirical_analysis():
     ax.plot(range(*range_n), [C] * (range_n[1] - range_n[0]), color="green", linestyle='--', label="C")
     ax.legend()
     plt.show()
-    fig.savefig('ratio_f_g.png')
+    fig.savefig('empiricalAnalysis_data/ratio_f_g.png')
 
