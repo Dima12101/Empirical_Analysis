@@ -22,6 +22,9 @@ def main():
     # x = np.arange(0, 100)
     # fig, ax = plt.subplots()
     # ax.scatter(x, p_val, marker='o', s=10, c="red", edgecolor='b')
+    # ax.set_title("Анализ равномерной генерации значений\n при помощи функции $random$")
+    # ax.set_xlabel("Значения")
+    # ax.set_ylabel("Частотная встречаемость")
     # plt.show()
     # fig.savefig('random-check.png')
 

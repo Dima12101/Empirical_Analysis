@@ -14,8 +14,9 @@ def _show_empirical_f_with_asymptotic(empirical_f, C1, C2):
     ax.plot(x, upperAsymptotic, color="green", linestyle='--', label="$C_2n^2$")
     ax.scatter(x, empirical_f, marker='o', s=10, c="red", edgecolor='b', label="$f(n)$")
     ax.plot(x, lowerAsymptotic, color="orange", linestyle='--', label="$C_1n^2$")
-    ax.set_xlabel("n")
-    ax.set_ylabel("Трудоёмкость")
+    ax.set_title("Верхняя и нижняя асимптотика измеренных значений трудоёмкости")
+    ax.set_xlabel("n (Размер вх.данных)")
+    ax.set_ylabel("Трудоёмкость (мс)")
     ax.minorticks_on()
     ax.grid(which='major',
             color='k',
@@ -33,8 +34,9 @@ def _show_empirical_f(empirical_f):
     x = np.arange(*RANGE_n)
     fig, ax = plt.subplots()
     ax.scatter(x, empirical_f, marker='o', s=10, c="red", edgecolor='b', label="$f(n)$")
-    ax.set_xlabel("n")
-    ax.set_ylabel("Трудоёмкость")
+    ax.set_title("Измеренные значения трудоёмкости")
+    ax.set_xlabel("n (Размер вх.данных)")
+    ax.set_ylabel("Трудоёмкость (мс)")
     ax.minorticks_on()
     ax.grid(which='major',
             color='k',
@@ -45,7 +47,7 @@ def _show_empirical_f(empirical_f):
     ax.legend()
 
     plt.show()
-    fig.savefig('empiricalAnalysis_data/empirical_f_test1.png')
+    fig.savefig('empiricalAnalysis_data/empirical_f.png')
 
 
 def empirical_analysis():
@@ -54,8 +56,8 @@ def empirical_analysis():
     m = 100
     repeats = 100
 
-    '''Getting of empirical f'''
     f = [None] * (range_n[1] - range_n[0])
+    '''Getting of empirical f'''
     for i, n in enumerate(range(*range_n)):
         print(n)
         f_on_n = [None] * m
@@ -99,7 +101,8 @@ def empirical_analysis():
     print('C', C)
     
     fig, ax = plt.subplots()
-    ax.set_xlabel("n")
+    ax.set_title("Отношение измеренных значений трудоёмкости к теоретическим")
+    ax.set_xlabel("n (Размер вх.данных)")
     ax.scatter(range(*range_n), ratio_f_g, marker='o', s=4, c="red", edgecolor='b')
     ax.plot(range(*range_n), ratio_f_g, color="red", linestyle='--', label="$f(n)/n^2$")
     ax.plot(range(*range_n), [C] * (range_n[1] - range_n[0]), color="green", linestyle='--', label="C")
@@ -113,7 +116,8 @@ def empirical_analysis():
     f_n_2 = np.array(f[range_n[0] * 2 - range_n[0]::2])
     ratio_f2_f1 = f_n_2 / f_n_1
     fig, ax = plt.subplots()
-    ax.set_xlabel("n")
+    ax.set_title("Отношение измеренных значений трудоемкости\n при удвоении размера входных данных")
+    ax.set_xlabel("n (Размер вх.данных)")
     ax.scatter(n, ratio_f2_f1, marker='o', s=4, c="red", edgecolor='b')
     ax.plot(n, ratio_f2_f1, color="red", linestyle='--', label="$f(2n)/f(n)$")
     ax.legend()
